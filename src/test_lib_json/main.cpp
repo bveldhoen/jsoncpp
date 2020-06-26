@@ -21,6 +21,7 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <fstream>
 
 // Make numeric limits more convenient to talk about.
 // Assumes int type in 32 bits.
@@ -1979,6 +1980,36 @@ JSONTEST_FIXTURE(ReaderTest, parseWithDetailError) {
   JSONTEST_ASSERT(errors.at(0).message == "Bad escape sequence in string");
 }
 
+JSONTEST_FIXTURE(ReaderTest, parseGenerated) {
+  // Assuming build folder .../jsoncpp/build, and working folder .../jsoncpp/build/src/test_lib_json
+  std::ifstream ifs("../../../test/data/generated.json");
+  std::string doc;
+  std::getline(ifs, doc, static_cast<char>(EOF));
+  ifs.seekg(0);
+
+  Json::Reader reader;
+  Json::Value root;
+
+  bool ok = reader.parse(ifs, root);
+  JSONTEST_ASSERT(ok);
+  std::cout << reader.getFormattedErrorMessages() << std::endl;
+}
+
+JSONTEST_FIXTURE(ReaderTest, parseGeneratedInvalid) {
+  // Assuming build folder .../jsoncpp/build, and working folder .../jsoncpp/build/src/test_lib_json
+  std::ifstream ifs("../../../test/data/generated_invalid.json");
+  std::string doc;
+  std::getline(ifs, doc, static_cast<char>(EOF));
+  ifs.seekg(0);
+
+  Json::Reader reader;
+  Json::Value root;
+
+  bool ok = reader.parse(ifs, root);
+  JSONTEST_ASSERT(!ok);
+  std::cout << reader.getFormattedErrorMessages() << std::endl;
+}
+
 struct CharReaderTest : JsonTest::TestCase {};
 
 JSONTEST_FIXTURE(CharReaderTest, parseWithNoErrors) {
@@ -2610,6 +2641,8 @@ int main(int argc, const char* argv[]) {
   JSONTEST_REGISTER_FIXTURE(runner, ReaderTest, parseWithOneError);
   JSONTEST_REGISTER_FIXTURE(runner, ReaderTest, parseChineseWithOneError);
   JSONTEST_REGISTER_FIXTURE(runner, ReaderTest, parseWithDetailError);
+  JSONTEST_REGISTER_FIXTURE(runner, ReaderTest, parseGenerated);
+  JSONTEST_REGISTER_FIXTURE(runner, ReaderTest, parseGeneratedInvalid);
 
   JSONTEST_REGISTER_FIXTURE(runner, CharReaderTest, parseWithNoErrors);
   JSONTEST_REGISTER_FIXTURE(runner, CharReaderTest,
